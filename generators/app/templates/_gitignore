@@ -1,0 +1,28 @@
+# system files
+.DS_Store
+
+# binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+bin
+
+# test binary, build with `go test -c`
+*.test
+
+# output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# exclude config files
+config.toml
+config/config.toml
+env.list
+.env.local
+
+# exclude ide files
+.vscode
+.code
+.idea
+.bash_history
+.config

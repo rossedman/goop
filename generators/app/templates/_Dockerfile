@@ -1,0 +1,8 @@
+FROM golang:1.10-stretch as builder
+WORKDIR /go/src/<%- packagepath %>/<%- projectname %>
+COPY . ./
+RUN make
+
+FROM debian:stretch-slim
+COPY --from=builder /go/src/<%- packagepath %>/<%- projectname %>/bin/<%- projectname %> /usr/local/bin
+ENTRYPOINT ["/usr/local/bin/<%- projectname %>"]

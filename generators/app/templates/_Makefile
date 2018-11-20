@@ -1,0 +1,16 @@
+GO=go
+FILES := $(shell go list ./.../)
+
+.PHONY: all test clean dep
+
+all: test
+	$(GO) build -o bin/<%- projectname %>
+
+test:
+	$(GO) test -race -v $(FILES) -cover -coverprofile=coverage.out
+
+clean:
+	rm -vrf bin
+
+dep:
+	dep ensure
