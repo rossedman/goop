@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"<%- packagepath %>/<%- projectname %>/api"
+	"<%- repopath %>/api"
 	"google.golang.org/grpc"
 )
 

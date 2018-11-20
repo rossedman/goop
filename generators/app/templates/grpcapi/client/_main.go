@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"<%- packagepath %>/<%- projectname %>/api"
+	"<%- repopath %>/api"
 	"google.golang.org/grpc"
 )
 

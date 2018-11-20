@@ -9,7 +9,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"<%- packagepath %>/<%- projectname %>/pkg/controller"
+	"<%- repopath %>/pkg/controller"
 )
 
 var kubeconfig string

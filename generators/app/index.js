@@ -3,34 +3,59 @@ const Generator = require('yeoman-generator');
 const _ = require('lodash');
 const chalk = require('chalk');
 const yosay = require('yosay');
+const path = require('path');
 
 module.exports = class extends Generator {
+
+  // dynamically gets path
+  _getRepoUrl() {
+    var destinationPath = process.env.LOCAL_PATH || this.destinationRoot();
+    var repoUrl = '';
+    var src = path.sep + 'src' + path.sep;
+    var index = destinationPath.indexOf(src);
+    if (index !== -1) {
+      repoUrl = destinationPath.substring(index + src.length);
+    }
+    return repoUrl;
+  }
+
+  _getAppName(repoPath) {
+    var appName = path.parse(repoPath);
+    return appName.base
+  }
+
+  initializing() {
+    this.repoUrl = this._getRepoUrl();
+    this.appName = this._getAppName(this.repoUrl);
+    this.IsContinue = this.repoUrl.length > 0;
+  }
 
   prompting() {
     this.log(
       yosay(`Put some ${chalk.red('goop')} on it!`)
     );
 
+    // do not continue if not in GOPATH
+    if (!this.IsContinue) {
+      this.log(
+        `Goop generator will only generate project in '${chalk.red(
+          'GOPATH/src/<YOUR_PROJECT>'
+        )} directory'. Otherwise the generation will be stopped.`
+      );
+      return;
+    }
+
+    this.log(`Generating files in: ${chalk.blue(this.repoUrl)}`);
+    this.log(`App name detected as: ${chalk.blue(this.appName)}`);
+
     const prompts = [
-      {
-        type: 'input',
-        name: 'projectname',
-        message: 'What is the name of this project?',
-        default: 'test'
-      },
-      {
-        type: 'input',
-        name: 'packagepath',
-        message: 'The go project path',
-        default: 'github.com/rossedman'
-      },
       {
         type: 'list',
         name: 'project',
         message: 'What type of application do you want to create?',
         choices: [
           {
-            name: 'Empty Console Application',
+            name: 'Console Application',
             value: 'console'
           },
           {
@@ -55,12 +80,13 @@ module.exports = class extends Generator {
 
     return this.prompt(prompts).then(props => {
       this.projectType = props.project;
-      this.packagePath = props.packagepath;
-      this.projectName = props.projectname;
     });
   }
 
   writing() {
+
+    // if not in $GOPATH
+    if (!this.IsContinue) return;
 
     // sets defaults, but can be overridden
     this._setupDirectories();
@@ -72,21 +98,31 @@ module.exports = class extends Generator {
       // console app
       case 'console':
         this.fs.copyTpl(
+          this.templatePath('_Makefile'),
+          this.destinationPath('Makefile'),
+          { projectname: this.appName }
+        );
+        this.fs.copyTpl(
           this.templatePath('console/_Gopkg.toml'),
           this.destinationPath('Gopkg.toml'),
-          { projectname: this.projectName }
+          { projectname: this.appName }
         );
         this.fs.copyTpl(
           this.templatePath('console/cmd/_root.go'),
           this.destinationPath('cmd/root.go'),
-          { projectname: this.projectName }
+          { projectname: this.appName }
+        );
+        this.fs.copyTpl(
+          this.templatePath('console/cmd/_command.go'),
+          this.destinationPath('cmd/command.go'),
+          { projectname: this.appName }
         );
         this.fs.copyTpl(
           this.templatePath('console/_main.go'),
           this.destinationPath('main.go'),
           {
-            projectname: this.projectName,
-            packagepath: this.packagePath
+            projectname: this.appName,
+            repopath: this.repoUrl
           }
         );
         break;
@@ -94,77 +130,85 @@ module.exports = class extends Generator {
       // kubernetes controller
       case 'controller':
         this.fs.copyTpl(
+          this.templatePath('_Makefile'),
+          this.destinationPath('Makefile'),
+          { projectname: this.appName }
+        );
+        this.fs.copyTpl(
           this.templatePath('controller/_Gopkg.toml'),
           this.destinationPath('Gopkg.toml'),
-          { projectname: this.projectName }
+          { projectname: this.appName }
         );
         this.fs.copyTpl(
           this.templatePath('controller/cmd/_root.go'),
           this.destinationPath('cmd/root.go'),
           {
-            projectname: this.projectName,
-            packagepath: this.packagePath
+            projectname: this.appName,
+            repopath: this.repoUrl
           }
         );
         this.fs.copyTpl(
           this.templatePath('controller/_main.go'),
           this.destinationPath('main.go'),
           {
-            projectname: this.projectName,
-            packagepath: this.packagePath
+            projectname: this.appName,
+            repopath: this.repoUrl
           }
         );
         this.fs.copyTpl(
           this.templatePath('controller/cmd/_controller.go'),
           this.destinationPath('cmd/controller.go'),
           {
-            projectname: this.projectName,
-            packagepath: this.packagePath
+            projectname: this.appName,
+            repopath: this.repoUrl
           }
         );
         this.fs.copyTpl(
           this.templatePath('controller/pkg/controller/_controller.go'),
           this.destinationPath('pkg/controller/controller.go'),
           {
-            projectname: this.projectName,
-            packagepath: this.packagePath
+            projectname: this.appName,
+            repopath: this.repoUrl
           }
         );
         break;
 
       // grpcapi
       case 'grpcapi':
+        this.fs.copyTpl(
+          this.templatePath('grpcapi/_Makefile'),
+          this.destinationPath('grpcapi/Makefile'),
+          {
+            projectname: this.appName,
+            repopath: this.repoUrl
+          }
+        );
         this.fs.copy(
           this.templatePath('grpcapi/Brewfile'),
           this.destinationPath('Brewfile')
         );
         this.fs.copy(
-          this.templatePath('api/*'),
-          this.destinationPath('api')
+          this.templatePath('grpcapi/api/handler.go'),
+          this.destinationPath('api/handler.go')
+        );
+        this.fs.copy(
+          this.templatePath('grpcapi/api/service.proto'),
+          this.destinationPath('api/service.proto')
         );
         this.fs.copyTpl(
           this.templatePath('grpcapi/client/_main.go'),
           this.destinationPath('grpcapi/client/main.go'),
           {
-            projectname: this.projectName,
-            packagepath: this.packagePath
+            projectname: this.appName,
+            repopath: this.repoUrl
           }
         );
         this.fs.copyTpl(
           this.templatePath('grpcapi/server/_main.go'),
           this.destinationPath('grpcapi/server/main.go'),
           {
-            projectname: this.projectName,
-            packagepath: this.packagePath
-          }
-        );
-        // overwrite default Makefile
-        this.fs.copyTpl(
-          this.templatePath('grpcapi/_Makefile'),
-          this.destinationPath('grpcapi/Makefile'),
-          {
-            projectname: this.projectName,
-            packagepath: this.packagePath
+            projectname: this.appName,
+            repopath: this.repoUrl
           }
         );
         break;
@@ -213,7 +257,7 @@ module.exports = class extends Generator {
     this.fs.copyTpl(
       this.templatePath('_gitignore'),
       this.destinationPath('.gitignore'),
-      { projectname: this.projectName }
+      { projectname: this.appName }
     );
 
     // Copy Docker file
@@ -221,28 +265,30 @@ module.exports = class extends Generator {
       this.templatePath('_Dockerfile'),
       this.destinationPath('Dockerfile'),
       {
-        projectname: this.projectName,
-        packagepath: this.packagePath
+        projectname: this.appName,
+        repopath: this.repoUrl
       }
     );
-
-    // Copy Makefile file
-    this.fs.copyTpl(this.templatePath('_Makefile'), this.destinationPath('Makefile'), {
-      projectname: this.projectName,
-    });
 
     // Copy README file
     this.fs.copyTpl(
       this.templatePath('_readme.md'),
       this.destinationPath('README.md'),
-      { projectname: this.projectName }
+      { projectname: this.appName }
     );
 
     // Copy cibuild file
     this.fs.copyTpl(
       this.templatePath('_cibuild'),
       this.destinationPath('scripts/cibuild'),
-      { projectname: this.projectName }
+      { projectname: this.appName }
     );
+  }
+
+  end() {
+    if (!this.IsContinue) return;
+
+    this.log('\n');
+    // put end instructions here
   }
 };

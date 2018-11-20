@@ -1,7 +1,7 @@
 package main
 
 import (
-	"<%- packagepath %>/<%- projectname %>/cmd"
+	"<%- repopath %>/cmd"
 )
 
 func main() {

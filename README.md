@@ -34,3 +34,9 @@ Apache-2.0 © [Ross Edman]()
 [travis-url]: https://travis-ci.org/rossedman/generator-goop
 [daviddm-image]: https://david-dm.org/rossedman/generator-goop.svg?theme=shields.io
 [daviddm-url]: https://david-dm.org/rossedman/generator-goop
+
+## TODO
+
+- [ ] Add subcommand to console app
+- [ ] Add viper/config lookup in console app
+- [ ] Setup REST API app
