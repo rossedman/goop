@@ -97,14 +97,13 @@ module.exports = class extends Generator {
 
       // console app
       case 'console':
+        this.fs.copy(
+          this.templatePath('console/Gopkg.toml'),
+          this.destinationPath('Gopkg.toml')
+        );
         this.fs.copyTpl(
           this.templatePath('_Makefile'),
           this.destinationPath('Makefile'),
-          { projectname: this.appName }
-        );
-        this.fs.copyTpl(
-          this.templatePath('console/_Gopkg.toml'),
-          this.destinationPath('Gopkg.toml'),
           { projectname: this.appName }
         );
         this.fs.copyTpl(
@@ -129,14 +128,13 @@ module.exports = class extends Generator {
 
       // kubernetes controller
       case 'controller':
+        this.fs.copy(
+          this.templatePath('controller/Gopkg.toml'),
+          this.destinationPath('Gopkg.toml')
+        );
         this.fs.copyTpl(
           this.templatePath('_Makefile'),
           this.destinationPath('Makefile'),
-          { projectname: this.appName }
-        );
-        this.fs.copyTpl(
-          this.templatePath('controller/_Gopkg.toml'),
-          this.destinationPath('Gopkg.toml'),
           { projectname: this.appName }
         );
         this.fs.copyTpl(
@@ -175,9 +173,13 @@ module.exports = class extends Generator {
 
       // grpcapi
       case 'grpcapi':
+        this.fs.copy(
+          this.templatePath('grpcapi/Gopkg.toml'),
+          this.destinationPath('Gopkg.toml')
+        );
         this.fs.copyTpl(
           this.templatePath('grpcapi/_Makefile'),
-          this.destinationPath('grpcapi/Makefile'),
+          this.destinationPath('Makefile'),
           {
             projectname: this.appName,
             repopath: this.repoUrl
@@ -197,7 +199,7 @@ module.exports = class extends Generator {
         );
         this.fs.copyTpl(
           this.templatePath('grpcapi/client/_main.go'),
-          this.destinationPath('grpcapi/client/main.go'),
+          this.destinationPath('client/main.go'),
           {
             projectname: this.appName,
             repopath: this.repoUrl
@@ -205,7 +207,7 @@ module.exports = class extends Generator {
         );
         this.fs.copyTpl(
           this.templatePath('grpcapi/server/_main.go'),
-          this.destinationPath('grpcapi/server/main.go'),
+          this.destinationPath('server/main.go'),
           {
             projectname: this.appName,
             repopath: this.repoUrl
